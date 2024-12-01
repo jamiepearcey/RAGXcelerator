@@ -126,8 +126,8 @@ async function mergeNodesThenUpsert(
 
   const alreadyNode = await knowledgeGraphInst.getNode(entityName);
   if (alreadyNode !== null) {
-    alreadyEntityTypes.push(alreadyNode.entity_type);
-    alreadySourceIds.push(...splitStringByMultiMarkers(alreadyNode.source_id, [GRAPH_FIELD_SEP]));
+    alreadyEntityTypes.push(alreadyNode.entityType);
+    alreadySourceIds.push(...splitStringByMultiMarkers(alreadyNode.sourceId, [GRAPH_FIELD_SEP]));
     alreadyDescription.push(alreadyNode.description);
   }
 
@@ -175,8 +175,9 @@ async function mergeEdgesThenUpsert(
 
   if (await knowledgeGraphInst.hasEdge(srcId, tgtId)) {
     const alreadyEdge = await knowledgeGraphInst.getEdge(srcId, tgtId);
+    console.log('alreadyEdge', alreadyEdge);
     alreadyWeights.push(alreadyEdge.weight);
-    alreadySourceIds.push(...splitStringByMultiMarkers(alreadyEdge.source_id, [GRAPH_FIELD_SEP]));
+    alreadySourceIds.push(...splitStringByMultiMarkers(alreadyEdge.sourceId, [GRAPH_FIELD_SEP]));
     alreadyDescription.push(alreadyEdge.description);
     alreadyKeywords.push(...splitStringByMultiMarkers(alreadyEdge.keywords, [GRAPH_FIELD_SEP]));
   }
@@ -189,9 +190,9 @@ async function mergeEdgesThenUpsert(
   for (const needInsertId of [srcId, tgtId]) {
     if (!(await knowledgeGraphInst.hasNode(needInsertId))) {
       await knowledgeGraphInst.upsertNode(needInsertId, {
-        source_id: sourceId,
+        sourceId: sourceId,
         description: description,
-        entity_type: '"UNKNOWN"',
+        entityType: '"UNKNOWN"',
       });
     }
   }

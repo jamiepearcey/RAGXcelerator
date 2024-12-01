@@ -78,7 +78,7 @@ export class Neo4jStorage implements BaseGraphStorage {
 
     try {
       const query = `
-        MATCH (a:\`${sourceLabel}\`)-[r]-(b:\`${targetLabel}\`)
+        MATCH (a:\`${sourceLabel}\`)-[r:DIRECTED]->(b:\`${targetLabel}\`)
         RETURN COUNT(r) > 0 AS edgeExists
       `;
       const result = await session.run(query);
@@ -155,14 +155,13 @@ export class Neo4jStorage implements BaseGraphStorage {
 
     try {
       const query = `
-        MATCH (start:\`${sourceLabel}\`)-[r]->(end:\`${targetLabel}\`)
-        RETURN properties(r) as edge_properties
-        LIMIT 1
+        MATCH (start:\`${sourceLabel}\`)-[r:DIRECTED]->(end:\`${targetLabel}\`)
+        RETURN r
       `;
       const result = await session.run(query);
 
       if (result.records.length > 0) {
-        const edgeProps = result.records[0].get('edge_properties');
+        const edgeProps = result.records[0].get('r').properties;
         logger.debug(`getEdge:query:${query}:result:${JSON.stringify(edgeProps)}`);
         return edgeProps;
       }
