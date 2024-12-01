@@ -20,7 +20,8 @@ import {
   truncateListByTokenSize,
   locateJsonStringBodyFromString,
   processCombineContexts,
-  logger
+  logger,
+  replaceTemplateVariables
 } from './utils';
   
 async function handleEntityRelationSummary(
@@ -240,7 +241,7 @@ async function extractEntities(
     examples = PROMPTS.entityExtractionExamples.join('\n');
   }
 
-  const contextBase = {
+  const defaultContext = {
     tuple_delimiter: DEFAULT_TUPLE_DELIMITER,
     record_delimiter: DEFAULT_RECORD_DELIMITER,
     completion_delimiter: DEFAULT_COMPLETION_DELIMITER,
@@ -257,12 +258,18 @@ async function extractEntities(
     [chunkKey, chunkDp]: [string, TextChunkSchema]
   ): Promise<[Record<string, EntityData[]>, Record<string, RelationshipData[]>]> {
     const content = chunkDp.content;
-    const hintPrompt = PROMPTS.entityExtraction.replace(
-      /\{(\w+)\}/g,
-      (_, key) => contextBase[key as keyof typeof contextBase]
-    ).replace('{input_text}', content);
+    const contextBase = {
+      ...defaultContext,
+      input_text: content
+    };
+
+    const hintPrompt = replaceTemplateVariables(PROMPTS.entityExtraction, contextBase);
+    logger.debug(`[Entity Extraction] hintPrompt: ${hintPrompt}`);
 
     let finalResult = await llmFunc(hintPrompt);
+    
+    logger.debug(`[Entity Extraction] finalResult: ${finalResult}`);
+
     let history = [
       { role: 'user', content: hintPrompt },
       { role: 'assistant', content: finalResult }
@@ -321,7 +328,7 @@ async function extractEntities(
 
     const nowTicks = PROMPTS.processTickers[alreadyProcessed % PROMPTS.processTickers.length];
 
-    process.stdout.write(
+    logger.info(
       `${nowTicks} Processed ${alreadyProcessed} chunks, ${alreadyEntities} entities(duplicated), ${alreadyRelations} relations(duplicated)\r`
     );
 
@@ -434,14 +441,12 @@ async function kgQuery(
 
   // LLM generate keywords
   const contextObj = { query, examples, language };
-  const kwPrompt = PROMPTS.keywordsExtraction.replace(/\{(\w+)\}/g, (_: string, key: string) => 
-    contextObj[key as keyof typeof contextObj]
-  );
+  const kwPrompt = replaceTemplateVariables(PROMPTS.keywordsExtraction, contextObj);
 
   const result = await llmFunc(kwPrompt);
   logger.info("kw_prompt result:", result);
 
-  let keywordsData: { high_level_keywords?: string[], low_level_keywords?: string[] };
+  let keywordsData: { highLevelKeywords?: string[], lowLevelKeywords?: string[] };
   try {
     const jsonText = locateJsonStringBodyFromString(result);
     keywordsData = JSON.parse(jsonText);
@@ -450,22 +455,22 @@ async function kgQuery(
     return PROMPTS.failResponse;
   }
 
-  const hlKeywords = keywordsData.high_level_keywords || [];
-  const llKeywords = keywordsData.low_level_keywords || [];
+  const hlKeywords = keywordsData.highLevelKeywords || [];
+  const llKeywords = keywordsData.lowLevelKeywords || [];
 
   // Handle keywords missing
   if (!hlKeywords.length && !llKeywords.length) {
-    logger.warn("low_level_keywords and high_level_keywords is empty");
+    logger.warn("lowLevelKeywords and highLevelKeywords is empty");
     return PROMPTS.failResponse;
   }
 
   if (!llKeywords.length && ['local', 'hybrid'].includes(queryParam.mode)) {
-    logger.warn("low_level_keywords is empty");
+    logger.warn("lowLevelKeywords is empty");
     return PROMPTS.failResponse;
   }
 
   if (!hlKeywords.length && ['global', 'hybrid'].includes(queryParam.mode)) {
-    logger.warn("high_level_keywords is empty");
+    logger.warn("highLevelKeyWords is empty");
     return PROMPTS.failResponse;
   }
 
@@ -496,7 +501,7 @@ async function kgQuery(
     return sysPrompt;
   }
 
-  let response = await llmFunc(query, { system_prompt: sysPrompt });
+  let response = await llmFunc(query, { systemPrompt: sysPrompt });
 
   if (response.length > sysPrompt.length) {
     response = response

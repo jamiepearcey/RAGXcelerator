@@ -200,18 +200,19 @@ export interface LLMOptions {
     maxTokens?: number;
     temperature?: number;
     hashingKv?: BaseKVStorage<any>;
+    jsonMode?: boolean;
     [key: string]: any;
 }
 
 export interface LLMClient {
     complete(
         prompt: string,
-        options: LLMOptions
+        options?: LLMOptions
     ): Promise<string>;
     completeWithConfig(
         prompt: string,
         config: IOpenAIConfig,
-        options: LLMOptions
+        options?: LLMOptions
     ): Promise<string>;
     embedText?(text: string): Promise<number[]>;
     countTokens?(text: string): number;
@@ -249,7 +250,7 @@ export interface ILightRAGConfig {
     chunkTokenSize?: number;
     tiktokenModelName?: TiktokenModel;
     kvStorageFactory: (namespace: string) => BaseKVStorage<any>;
-    vectorStorageFactory: (namespace: string) => BaseVectorStorage;
+    vectorStorageFactory: (namespace: string, metaData: string[]) => BaseVectorStorage;
     graphStorage: BaseGraphStorage;
     llmClient: LLMClient;
     llmConfig?: LLMConfig;

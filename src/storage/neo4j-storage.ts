@@ -20,11 +20,11 @@ export class Neo4jStorage implements BaseGraphStorage {
     this.embeddingFunc = embeddingFunc;
   }
   
-  deleteNode(nodeId: string): Promise<void> {
+  async deleteNode(nodeId: string): Promise<void> {
     const label = nodeId.replace(/^"|"$/g, '');
     const session = this.driver.session();
 
-    return withRetry(async () => {
+    await withRetry(async () => {
       try {
         const query = `
           MATCH (n:\`${label}\`)
@@ -206,7 +206,7 @@ export class Neo4jStorage implements BaseGraphStorage {
   async upsertNode(nodeId: string, nodeData: Record<string, any>): Promise<void> {
     const label = nodeId.replace(/^"|"$/g, '');
 
-    return withRetry(async () => {
+    await withRetry(async () => {
       const session = this.driver.session();
       try {
         const query = `
@@ -234,7 +234,7 @@ export class Neo4jStorage implements BaseGraphStorage {
     const sourceLabel = sourceNodeId.replace(/^"|"$/g, '');
     const targetLabel = targetNodeId.replace(/^"|"$/g, '');
 
-    return withRetry(async () => {
+    await withRetry(async () => {
       const session = this.driver.session();
       try {
         const query = `

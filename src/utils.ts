@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { encoding_for_model, TiktokenModel } from 'tiktoken';
+import { encodingForModel, TiktokenModel } from 'js-tiktoken';
 import { ChunkResult } from './interfaces';
 
 export const logger = {
@@ -18,13 +18,13 @@ export function computeMdhashId(text: string, prefix = ''): string {
 }
 
 export function encodeStringByTiktoken(text: string, modelName : TiktokenModel = 'gpt-4'): number[] {
-  const enc = encoding_for_model(modelName);
-  return Array.from(enc.encode(text));
+  const enc = encodingForModel(modelName);
+  return enc.encode(text);
 }
 
 export function decodeTokensByTiktoken(tokens: number[], modelName : TiktokenModel = 'gpt-4'): string {
-  const enc = encoding_for_model(modelName);
-  return Array.from(enc.decode(new Uint32Array(tokens))).join('');
+  const enc = encodingForModel(modelName);
+  return enc.decode(tokens);
 }
 
 export function isFloatRegex(str: string): boolean {
@@ -124,4 +124,22 @@ export async function withRetry<T>(
   }
 
   throw lastError!;
+}
+
+export function toSnakeCase(str: string): string {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
+
+export function toCamelCase(str: string): string {
+  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
+export function replaceTemplateVariables(
+  template: string,
+  variables: Record<string, any>
+): string {
+  return template.replace(
+    /\{(\w+)\}/g,
+    (_, key) => variables[key]?.toString() || ''
+  );
 }

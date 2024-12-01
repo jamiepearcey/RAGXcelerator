@@ -11,6 +11,14 @@ export const DEFAULT_LLM_CONFIG: LLMConfig =  {
     addonParams: {}
 }
 
+export const DEFAULT_QUERY_PARAM: QueryParam = {
+    mode: 'local',
+    topK: 5,
+    maxTokenForTextUnit: 1024,
+    maxTokenForLocalContext: 512,
+    maxTokenForGlobalContext: 512
+}
+
 export class LightRAG implements StreamProcessor {
     private llmClient: LLMClient;
     private llmResponseCache: BaseKVStorage<any>;
@@ -26,15 +34,14 @@ export class LightRAG implements StreamProcessor {
 
     constructor(config: ILightRAGConfig) {
         this.llmClient = config.llmClient;
-        this.llmResponseCache = config.kvStorageFactory('llm-response-cache');
-        this.fullDocumentCache = config.kvStorageFactory('full-document-cache');
-        this.textChunkCache = config.kvStorageFactory('text-chunk-cache');
+        this.llmResponseCache = config.kvStorageFactory('llm_response_cache');
+        this.fullDocumentCache = config.kvStorageFactory('full_document_cache');
+        this.textChunkCache = config.kvStorageFactory('text_chunk_cache');
+        this.entityCache = config.vectorStorageFactory('entity_cache', []);
+        this.relationCache = config.vectorStorageFactory('relation_cache', []);
+        this.chunkCache = config.vectorStorageFactory('chunk_cache', ['fullDocId']);
         this.graphStorage = config.graphStorage;
-        this.entityCache = config.vectorStorageFactory('entity-cache');
-        this.relationCache = config.vectorStorageFactory('relation-cache');
-        this.chunkCache = config.vectorStorageFactory('chunk-cache');
-        this.llmConfig = config.llmConfig || DEFAULT_LLM_CONFIG;
-        // Configuration
+        this.llmConfig = {...DEFAULT_LLM_CONFIG, ...config.llmConfig};
         this.chunkOverlapTokenSize = config.chunkOverlapTokenSize || 128;
         this.chunkTokenSize = config.chunkTokenSize || 1024;
     }
@@ -231,7 +238,7 @@ export class LightRAG implements StreamProcessor {
                         computeMdhashId(dp.entityName, "ent-"),
                         {
                             content: dp.entityName + dp.description,
-                            entity_name: dp.entityName,
+                            entityName: dp.entityName,
                         }
                     ])
                 );
@@ -259,17 +266,9 @@ export class LightRAG implements StreamProcessor {
         }
     }
 
-    async query(query: string, param: QueryParam = {
-        mode: 'local',
-        topK: 5,
-        maxTokenForTextUnit: 1024,
-        maxTokenForLocalContext: 512,
-        maxTokenForGlobalContext: 512
-    }): Promise<string> {
-        return this.aquery(query, param);
-    }
-
-    async aquery(query: string, param: QueryParam): Promise<string> {
+    async query(query: string, param: QueryParam = DEFAULT_QUERY_PARAM): Promise<string> {
+        param = {...DEFAULT_QUERY_PARAM, ...param};
+        
         if (["local", "global", "hybrid"].includes(param.mode)) {
             
             const response = await kgQuery(

@@ -5,6 +5,7 @@ export const DEFAULT_COMPLETION_DELIMITER = '\n';
 export const DEFAULT_LANGUAGE = 'en';
 
 export const PROMPTS = {
+  jsonOnlySystemPrompt: 'You are an assistant that only outputs JSON responses. Do not include any explanatory text, comments, or anything outside valid JSON syntax.',
   failResponse: "Sorry, I'm not able to provide an answer to that question.",
   processTickers: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'],
   defaultLanguage: 'English',
@@ -18,7 +19,7 @@ Use {language} as output language.
 
 -Steps-
 1. Identify all entities. For each identified entity, extract the following information:
-- entity_name: Name of the entity, use same language as input text. If English, capitalized the name.
+- entityName: Name of the entity, use same language as input text. If English, capitalized the name.
 - entity_type: One of the following types: [{entity_types}]
 - entity_description: Comprehensive description of the entity's attributes and activities
 Format each entity as ("entity"{tuple_delimiter}<entity_name>{tuple_delimiter}<entity_type>{tuple_delimiter}<entity_description>
@@ -107,8 +108,8 @@ Given the query, list both high-level and low-level keywords. High-level keyword
 
 - Output the keywords in JSON format.
 - The JSON should have two keys:
-  - "high_level_keywords" for overarching concepts or themes.
-  - "low_level_keywords" for specific entities or details.
+  - "highLevelKeyWords" for overarching concepts or themes.
+  - "lowLevelKeywords" for specific entities or details.
 
 ######################
 -Examples-
@@ -130,8 +131,8 @@ Query: "How does international trade influence global economic stability?"
 ################
 Output:
 {
-  "high_level_keywords": ["International trade", "Global economic stability", "Economic impact"],
-  "low_level_keywords": ["Trade agreements", "Tariffs", "Currency exchange", "Imports", "Exports"]
+  "highLevelKeywords": ["International trade", "Global economic stability", "Economic impact"],
+  "lowLevelKeywords": ["Trade agreements", "Tariffs", "Currency exchange", "Imports", "Exports"]
 }
 #############################`,
     `Example 2:
@@ -140,8 +141,8 @@ Query: "What are the environmental consequences of deforestation on biodiversity
 ################
 Output:
 {
-  "high_level_keywords": ["Environmental consequences", "Deforestation", "Biodiversity loss"],
-  "low_level_keywords": ["Species extinction", "Habitat destruction", "Carbon emissions", "Rainforest", "Ecosystem"]
+  "highLevelKeywords": ["Environmental consequences", "Deforestation", "Biodiversity loss"],
+  "lowLevelKeywords": ["Species extinction", "Habitat destruction", "Carbon emissions", "Rainforest", "Ecosystem"]
 }
 #############################`,
     `Example 3:
@@ -150,8 +151,8 @@ Query: "What is the role of education in reducing poverty?"
 ################
 Output:
 {
-  "high_level_keywords": ["Education", "Poverty reduction", "Socioeconomic development"],
-  "low_level_keywords": ["School access", "Literacy rates", "Job training", "Income inequality"]
+  "highLevelKeyWords": ["Education", "Poverty reduction", "Socioeconomic development"],
+  "lowLevelKeywords": ["School access", "Literacy rates", "Job training", "Income inequality"]
 }
 #############################`
   ],

@@ -1,6 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { BaseVectorStorage, EmbeddingFunction } from '../interfaces';
-import { computeMdhashId, logger } from '../utils';
+import { computeMdhashId, logger, toSnakeCase, toCamelCase } from '../utils';
 
 export class SupabaseVectorStorage implements BaseVectorStorage {
   private superbaseClient: SupabaseClient;
@@ -20,10 +20,28 @@ export class SupabaseVectorStorage implements BaseVectorStorage {
   ) {
     this.superbaseClient = superbaseClient;
     this.tableName = tableName;
-    this.embeddingColumn = embeddingColumn;
-    this.contentColumn = contentColumn;
-    this.metadataColumns = metadataColumns;
+    this.embeddingColumn = toSnakeCase(embeddingColumn);
+    this.contentColumn = toSnakeCase(contentColumn);
+    this.metadataColumns = metadataColumns.map(toSnakeCase);
     this.embeddingFunc = embeddingFunc;
+  }
+
+  private transformResponse(data: any): any {
+    if (!data) return data;
+    
+    return Object.entries(data).reduce((acc, [key, value]) => ({
+      ...acc,
+      [toCamelCase(key)]: value
+    }), {});
+  }
+
+  private transformRequest(data: any): any {
+    if (!data) return data;
+    
+    return Object.entries(data).reduce((acc, [key, value]) => ({
+      ...acc,
+      [toSnakeCase(key)]: value
+    }), {});
   }
 
   async getById(id: string): Promise<any> {
@@ -34,7 +52,7 @@ export class SupabaseVectorStorage implements BaseVectorStorage {
       .single();
 
     if (error) throw error;
-    return data; 
+    return this.transformResponse(data);
   }
 
   async getByIds(ids: string[]): Promise<any[]> {
@@ -44,7 +62,7 @@ export class SupabaseVectorStorage implements BaseVectorStorage {
       .in('id', ids);
 
     if (error) throw error;
-    return data || [];
+    return (data || []).map(this.transformResponse);
   }
 
   async query(query: string, topK: number = 5): Promise<any[]> {
@@ -58,19 +76,21 @@ export class SupabaseVectorStorage implements BaseVectorStorage {
     });
 
     if (error) throw error;
-    return data || [];
+    return (data || []).map(this.transformResponse);
   }
 
   async upsert(data: Record<string, any>): Promise<void> {
     const records = await Promise.all(
       Object.entries(data).map(async ([id, item]) => {
-        const embedding = await this.embeddingFunc(item[this.contentColumn]);
+        const embedding = await this.embeddingFunc(item[toCamelCase(this.contentColumn)]);
+        const transformedItem = this.transformRequest(item);
+        
         return {
           id,
           [this.embeddingColumn]: embedding,
-          [this.contentColumn]: item[this.contentColumn],
+          [this.contentColumn]: transformedItem[this.contentColumn],
           ...Object.fromEntries(
-            this.metadataColumns.map(col => [col, item[col]])
+            this.metadataColumns.map(col => [col, transformedItem[col]])
           )
         };
       })
@@ -143,6 +163,9 @@ export class SupabaseVectorStorage implements BaseVectorStorage {
   }
 }
 
+export const getSuperbaseVectorStorageFactory = (client: SupabaseClient, embeddingFunc: EmbeddingFunction) => {
+  return (namespace: string, metaData: string[]) => new SupabaseVectorStorage(client, embeddingFunc, namespace, 'embedding', 'content', metaData)
+}
 // SQL function to create in your Supabase database:
 /*
 create or replace function match_documents (

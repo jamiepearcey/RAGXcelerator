@@ -26,6 +26,9 @@ importers:
       gpt-tokenizer:
         specifier: ^2.7.0
         version: 2.7.0
+      js-tiktoken:
+        specifier: ^1.0.15
+        version: 1.0.15
       multer:
         specifier: 1.4.5-lts.1
         version: 1.4.5-lts.1
@@ -1172,6 +1175,9 @@ packages:
     peerDependenciesMeta:
       node-notifier:
         optional: true
+
+  js-tiktoken@1.0.15:
+    resolution: {integrity: sha512-65ruOWWXDEZHHbAo7EjOcNxOGasQKbL4Fq3jEr2xsCqSsoOo6VVSqzWQb6PRIqypFSDcma4jO90YP0w5X8qVXQ==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -3256,6 +3262,10 @@ snapshots:
       - babel-plugin-macros
       - supports-color
       - ts-node
+
+  js-tiktoken@1.0.15:
+    dependencies:
+      base64-js: 1.5.1
 
   js-tokens@4.0.0: {}
 

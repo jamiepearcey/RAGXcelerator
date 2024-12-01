@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import { computeMdhashId, withRetry } from '../utils';
 import { LLMClient, OpenAIConfig, LLMMessage, LLMOptions, EmbeddingFunction, IOpenAIConfig } from '../interfaces';
 import { logger } from '../utils';
+import { PROMPTS } from '../constants';
 
 export class OpenAIClient implements LLMClient {
   private client: OpenAI;
@@ -12,35 +13,42 @@ export class OpenAIClient implements LLMClient {
     this.client = new OpenAI({
       apiKey: config.apiKey,
       baseURL: config.baseURL,
-      maxRetries: 3,
+      maxRetries: config.maxRetries || 3,
     });
+
+    this.complete = this.complete.bind(this);
+    this.completeWithConfig = this.completeWithConfig.bind(this);
+    this.embedText = this.embedText.bind(this);
+    this.countTokens = this.countTokens.bind(this);
   }
 
-  async complete(
+  complete = async (
     prompt: string,
-    options: LLMOptions
-  ): Promise<string> {
-    return this.completeWithConfig(prompt, this.config, options);
+    options: LLMOptions = {}
+  ): Promise<string> => {
+    return await this.completeWithConfig(prompt, this.config, options);
   }
 
-  async completeWithConfig(
+  completeWithConfig = async (
     prompt: string,
     config: IOpenAIConfig,
-    options: LLMOptions
-  ): Promise<string> {
-    return withRetry(async () => {
+    options: LLMOptions = {}
+  ): Promise<string> => {
+    return await withRetry(async () => {
       const messages: LLMMessage[] = [];
       
       if (options.systemPrompt) {
         messages.push({ role: 'system', content: options.systemPrompt });
       }
+
+      if (options.jsonMode) {
+        messages.push({ role: 'system', content: PROMPTS.jsonOnlySystemPrompt });
+      } 
       
+      messages.push({ role: 'user', content: prompt });
+
       if (options.historyMessages) {
         messages.push(...options.historyMessages);
-      }
-      
-      if (prompt) {
-        messages.push({ role: 'user', content: prompt });
       }
 
       // Check cache if hashingKv is provided
@@ -106,7 +114,7 @@ export class OpenAIClient implements LLMClient {
     return response.data[0].embedding;
   }
 
-  countTokens(text: string): number {
+  countTokens = (text: string): number => {
     // Implement token counting logic here
     // You might want to use a tokenizer library like tiktoken
     return text.length; // Placeholder implementation

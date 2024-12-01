@@ -15,6 +15,7 @@ export const env = {
     } as ISupabaseConfig,
     openai: {
         apiKey: process.env.OPENAI_API_KEY,
-        baseURL: process.env.OPENAI_BASE_URL
+        baseURL: process.env.OPENAI_BASE_URL,
+        model: 'gpt-4o'
     } as OpenAIConfig
 }

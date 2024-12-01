@@ -129,6 +129,7 @@ export class SupabaseKVStorage<T> implements BaseKVStorage<T> {
   }
 }
 
+
 /* SQL to create the table and index:
 
 CREATE TABLE kv_store (
