@@ -7,8 +7,17 @@ import { LightRagBuilder } from '../light-rag-builder';
 export async function createServer() {
   const app = express();
 
-  // Middleware
-  app.use(cors());
+  // Configure CORS based on environment
+  if (env.server.corsEnabled) {
+    const corsOptions = {
+      origin: env.server.corsOrigin || '*',
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization']
+    };
+    app.use(cors(corsOptions));
+  }
+
+  // Other middleware
   app.use(express.json());
 
   const lightRagBuilder = new LightRagBuilder();

@@ -3,7 +3,7 @@ import { IEnv } from "./interfaces";
 
 dotenv.config();
 
-export const env : IEnv = {
+export const env: IEnv = {
     neo4j: {
         uri: process.env.NEO4J_URI!,
         username: process.env.NEO4J_USERNAME!,
@@ -24,8 +24,11 @@ export const env : IEnv = {
         baseUrl: process.env.EMBEDDING_BASE_URL!,
         model: process.env.EMBEDDING_MODEL!,
         provider: process.env.EMBEDDING_PROVIDER!
-    }, 
-    openAiConfig: {
-        
+    },
+    openAiConfig: {},
+    server: {
+        port: parseInt(process.env.PORT || '3000'),
+        corsEnabled: process.env.CORS_ENABLED?.toLowerCase() === 'true',
+        corsOrigin: process.env.CORS_ORIGIN?.split(',')
     }
-}
+};

@@ -280,6 +280,11 @@ export interface IEnv {
     llmConfig: IModelApiConfig;
     embeddingConfig: IModelApiConfig;
     openAiConfig: IOpenAIConfig;
+    server: {
+        port: number;
+        corsEnabled: boolean;
+        corsOrigin?: string | string[];
+    };
 }
 
 export type IModelMapping = Record<string, (config: IModelApiConfig, env: IEnv) => any>;
