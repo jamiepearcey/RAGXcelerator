@@ -1,13 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import { createLightRagRouter } from './router';
-import { LightRAG } from '../light-rag';
 import { env } from '../env';
-import { OpenAIClient } from '../llm-clients/openai-client';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { SupabaseKVStorage } from '../kv-storage/superbase-kv-storage';
-import { SupabaseVectorStorage } from '../vector-storage/superbase-vector-storage';
-import { Neo4jStorage } from '../graph-storage/neo4j-storage';
+import { LightRagBuilder } from '../light-rag-builder';
 
 export async function createServer() {
   const app = express();
@@ -16,23 +11,8 @@ export async function createServer() {
   app.use(cors());
   app.use(express.json());
 
-  // Initialize LightRAG
-  const openAIClient = new OpenAIClient(env.openai);
-  const supabaseClient = new SupabaseClient(env.supabase.url, env.supabase.anonKey);
-  const kvStorageFactory = (namespace: string) => new SupabaseKVStorage(supabaseClient, namespace);
-  const vectorStorageFactory = (namespace: string) => 
-    new SupabaseVectorStorage(supabaseClient, openAIClient.embedText, namespace, 'embedding', 'content', ['metadata']);
-  const graphStorage = new Neo4jStorage(openAIClient.embedText, env.neo4j);
-
-  const lightRag = new LightRAG({
-    kvStorageFactory,
-    vectorStorageFactory,
-    graphStorage,
-    llmClient: openAIClient,
-    chunkOverlapTokenSize: 128,
-    chunkTokenSize: 1024,
-    tiktokenModelName: 'gpt-4'
-  });
+  const lightRagBuilder = new LightRagBuilder();
+  const lightRag = lightRagBuilder.build(env);
 
   // Routes
   app.use('/api/rag', createLightRagRouter(lightRag));

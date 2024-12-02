@@ -22,8 +22,6 @@ export interface RelationshipData {
     sourceId: string;
 }
 
-export type EmbeddingFunction = (text: string) => Promise<number[]>;
-
 export interface BaseGraphStorage {
     hasNode(nodeId: string): Promise<boolean>;
     hasEdge(sourceNodeId: string, targetNodeId: string): Promise<boolean>;
@@ -42,14 +40,21 @@ export interface BaseGraphStorage {
     indexDoneCallback(): Promise<void>;
 }
 
-export interface OpenAIConfig {
-    model: 'gpt-4o' | 'gpt-4o-mini' | string;
+export interface IApiCredentials {
     baseUrl?: string;
     apiKey?: string;
-    apiVersion?: string;
+}
+
+export interface IRetryConfig {
     maxRetries?: number;
     minRetryDelay?: number;
     maxRetryDelay?: number;
+}
+
+export interface IModelApiConfig extends IApiCredentials, IRetryConfig 
+{
+    model: string;
+    provider: string;
 }
 
 export interface OpenAIMessage {
@@ -172,7 +177,6 @@ export interface LLMMessage {
 }
 
 export interface IOpenAIConfig {
-    model: string;
     temperature?: number;
     topP?: number;
     maxTokens?: number;
@@ -218,14 +222,14 @@ export interface LLMClient {
     countTokens?(text: string): number;
 }
 
-export interface OpenAIConfig extends LLMConfig {
-    apiKey?: string;
-    baseURL: string;
+export type EmbeddingFunction = (text: string) => Promise<number[]>;
+
+export interface IEmbeddingClient {
+    convertToEmbedding: EmbeddingFunction;
 }
 
-export interface OpenAICredentials {
-    apiKey?: string;
-    baseURL?: string;
+export interface IModelConfig extends LLMConfig, IApiCredentials {
+    
 }
 
 export interface LightRAGConfig {
@@ -268,3 +272,14 @@ export interface StreamProcessor {
         options?: StreamOptions
     ): Promise<void>;
 }
+
+
+export interface IEnv {
+    neo4j: INeo4jStorageConfig;
+    supabase: ISupabaseConfig;
+    llmConfig: IModelApiConfig;
+    embeddingConfig: IModelApiConfig;
+    openAiConfig: IOpenAIConfig;
+}
+
+export type IModelMapping = Record<string, (config: IModelApiConfig, env: IEnv) => any>;

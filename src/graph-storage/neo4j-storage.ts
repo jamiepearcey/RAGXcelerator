@@ -1,14 +1,12 @@
 import neo4j, { Driver, ManagedTransaction, Session, Transaction } from 'neo4j-driver';
-import { BaseGraphStorage, EmbeddingFunction, INeo4jStorageConfig } from '../interfaces';
+import { BaseGraphStorage, EmbeddingFunction, IEmbeddingClient, INeo4jStorageConfig } from '../interfaces';
 import { logger, withRetry } from '../utils';
 
 export class Neo4jStorage implements BaseGraphStorage {
   private driver: Driver;
   private driverLock: Promise<void>;
-  embeddingFunc: EmbeddingFunction;
 
   constructor(
-    embeddingFunc: EmbeddingFunction,
     config: INeo4jStorageConfig
   ) {
     if (!config.uri || !config.username || !config.password) {
@@ -17,7 +15,6 @@ export class Neo4jStorage implements BaseGraphStorage {
 
     this.driver = neo4j.driver(config.uri, neo4j.auth.basic(config.username, config.password));
     this.driverLock = Promise.resolve();
-    this.embeddingFunc = embeddingFunc;
   }
   
   async deleteNode(nodeId: string): Promise<void> {

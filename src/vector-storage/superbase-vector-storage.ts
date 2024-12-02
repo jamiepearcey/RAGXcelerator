@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { BaseVectorStorage, EmbeddingFunction } from '../interfaces';
+import { BaseVectorStorage, EmbeddingFunction, IEmbeddingClient } from '../interfaces';
 import { computeMdhashId, logger, toSnakeCase, toCamelCase } from '../utils';
 
 export class SupabaseVectorStorage implements BaseVectorStorage {
@@ -8,11 +8,11 @@ export class SupabaseVectorStorage implements BaseVectorStorage {
   private embeddingColumn: string;
   private contentColumn: string;
   private metadataColumns: string[];
-  private embeddingFunc: EmbeddingFunction;
+  private embeddingClient: IEmbeddingClient;
 
   constructor(
     superbaseClient: SupabaseClient,
-    embeddingFunc: EmbeddingFunction,
+    embeddingClient: IEmbeddingClient,
     tableName: string,
     embeddingColumn = 'embedding',
     contentColumn = 'content',
@@ -23,7 +23,7 @@ export class SupabaseVectorStorage implements BaseVectorStorage {
     this.embeddingColumn = toSnakeCase(embeddingColumn);
     this.contentColumn = toSnakeCase(contentColumn);
     this.metadataColumns = metadataColumns.map(toSnakeCase);
-    this.embeddingFunc = embeddingFunc;
+    this.embeddingClient = embeddingClient;
   }
 
   private transformResponse(data: any): any {
@@ -66,7 +66,7 @@ export class SupabaseVectorStorage implements BaseVectorStorage {
   }
 
   async query(query: string, topK: number = 5): Promise<any[]> {
-    const queryEmbedding = await this.embeddingFunc(query);
+    const queryEmbedding = await this.embeddingClient.convertToEmbedding(query);
 
     const { data, error } = await this.superbaseClient.rpc('match_documents', {
       query_embedding: JSON.stringify(queryEmbedding),
@@ -82,7 +82,7 @@ export class SupabaseVectorStorage implements BaseVectorStorage {
   async upsert(data: Record<string, any>): Promise<void> {
     const records = await Promise.all(
       Object.entries(data).map(async ([id, item]) => {
-        const embedding = await this.embeddingFunc(item[toCamelCase(this.contentColumn)]);
+        const embedding = await this.embeddingClient.convertToEmbedding(item[toCamelCase(this.contentColumn)]);
         const transformedItem = this.transformRequest(item);
         
         return {
@@ -163,6 +163,6 @@ export class SupabaseVectorStorage implements BaseVectorStorage {
   }
 }
 
-export const getSuperbaseVectorStorageFactory = (client: SupabaseClient, embeddingFunc: EmbeddingFunction) => {
-  return (namespace: string, metaData: string[]) => new SupabaseVectorStorage(client, embeddingFunc, namespace, 'embedding', 'content', metaData)
+export const getSuperbaseVectorStorageFactory = (client: SupabaseClient, embeddingClient: IEmbeddingClient) => {
+  return (namespace: string, metaData: string[]) => new SupabaseVectorStorage(client, embeddingClient, namespace, 'embedding', 'content', metaData)
 }
