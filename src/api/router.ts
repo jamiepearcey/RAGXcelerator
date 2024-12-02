@@ -8,6 +8,35 @@ export function createLightRagRouter(lightRag: LightRAG) {
   const router = express.Router();
   const upload = multer({ storage: multer.memoryStorage() });
 
+  /**
+   * @openapi
+   * /api/rag/query:
+   *   post:
+   *     summary: Query the RAG system
+   *     description: Send a query to get information from the knowledge base
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               query:
+   *                 type: string
+   *               mode:
+   *                 type: string
+   *                 enum: [local, global, hybrid, naive]
+   *     responses:
+   *       200:
+   *         description: Query response
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 response:
+   *                   type: string
+   */
   // Insert documents
   router.post('/insert', async (req: Request, res: Response) => {
     try {
