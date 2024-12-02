@@ -1,5 +1,5 @@
 import { DEFAULT_COMPLETION_DELIMITER, DEFAULT_LANGUAGE, DEFAULT_RECORD_DELIMITER, DEFAULT_TUPLE_DELIMITER, GRAPH_FIELD_SEP, PROMPTS } from './prompts';
-import { EntityData, LLMConfig, LLMFunc, RelationshipData } from './interfaces';
+import { EntityData, LLMClient, LLMConfig, LLMFunc, RelationshipData } from './interfaces';
 
 import { 
   BaseGraphStorage, 
@@ -420,7 +420,7 @@ async function kgQuery(
   textChunksDb: BaseKVStorage<TextChunkSchema>,
   queryParam: QueryParam,
   llmConfig: LLMConfig,
-  llmFunc: LLMFunc
+  llmClient: LLMClient
 ): Promise<string> {
   let context: string | null = null;
   const exampleNumber = llmConfig.addonParams.exampleNumber;
@@ -444,7 +444,7 @@ async function kgQuery(
   const contextObj = { query, examples, language };
   const kwPrompt = replaceTemplateVariables(PROMPTS.keywordsExtraction, contextObj);
 
-  const result = await llmFunc(kwPrompt);
+  const result = await llmClient.complete(kwPrompt, {jsonMode: true});
   logger.info("kw_prompt result:", result);
 
   let keywordsData: { highLevelKeywords?: string[], lowLevelKeywords?: string[] };
@@ -502,7 +502,7 @@ async function kgQuery(
     return sysPrompt;
   }
 
-  let response = await llmFunc(query, { systemPrompt: sysPrompt });
+  let response = await llmClient.complete(query, { systemPrompt: sysPrompt });
 
   if (response.length > sysPrompt.length) {
     response = response

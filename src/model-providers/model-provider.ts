@@ -8,7 +8,13 @@ export class ModelProvider<T> {
     }
 
     public getModel(config: IModelApiConfig, env: IEnv) : T {
-        return this.models[config.model](config, env);
+        const modelFactory = this.models[config.provider]
+
+        if (!modelFactory) {
+            throw new Error(`Model ${config.model} not found`);
+        }
+
+        return modelFactory(config, env);
     }
 
     public addAdditionalModel(key: string, factory: (config: IModelApiConfig, env: IEnv) => T) {

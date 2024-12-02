@@ -1,44 +1,15 @@
 import { env } from '../src/env';
-import { SupabaseKVStorage } from '../src/kv-storage/superbase-kv-storage';
-import { SupabaseVectorStorage } from '../src/vector-storage/superbase-vector-storage';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { OpenAIClient } from '../src/llm-clients/openai-client';
-import { Neo4jStorage } from '../src/storage/neo4j-storage';
 import { DEFAULT_QUERY_PARAM, LightRAG } from '../src/light-rag';
+import { LightRagBuilder } from '../src/light-rag-builder';
 
 describe('Integration test', () => {
     jest.setTimeout(300000);
     
     let lightRAG: LightRAG;
-    let supabaseClient: SupabaseClient;
-    let openAIClient: OpenAIClient;
-    let graphStorage: Neo4jStorage;
  
     beforeAll(async () => {
-        openAIClient = new OpenAIClient(env.openai);
-        supabaseClient = new SupabaseClient(env.supabase.url, env.supabase.anonKey);
-        const kvStorageFactory = (namespace: string) => 
-            new SupabaseKVStorage(supabaseClient, namespace);
-        const vectorStorageFactory = (namespace: string, metaData: string[]) => 
-            new SupabaseVectorStorage(
-                supabaseClient, 
-                openAIClient.embedText, 
-                namespace, 
-                'embedding', 
-                'content', 
-                metaData
-            );
-        graphStorage = new Neo4jStorage(openAIClient.embedText, env.neo4j);
-
-        lightRAG = new LightRAG({
-            kvStorageFactory,
-            vectorStorageFactory,
-            graphStorage,
-            llmClient: openAIClient,
-            chunkOverlapTokenSize: 128,
-            chunkTokenSize: 1024,
-            tiktokenModelName: 'gpt-4'
-        });
+        const lightRagBuilder = new LightRagBuilder();
+        lightRAG = lightRagBuilder.build(env);
     });
 
     afterAll(async () => {

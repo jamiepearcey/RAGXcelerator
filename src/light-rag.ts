@@ -282,7 +282,7 @@ export class LightRAG implements StreamProcessor {
                 this.textChunkCache,
                 param,
                 this.llmConfig,
-                this.llmClient.complete
+                this.llmClient
             );
             return response;
         } else if (param.mode === "naive") {

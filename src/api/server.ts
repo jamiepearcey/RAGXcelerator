@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { createLightRagRouter } from './router';
+import { createBenchmarkRouter } from './benchmark';
 import { env } from '../env';
 import { LightRagBuilder } from '../light-rag-builder';
 
@@ -25,6 +26,7 @@ export async function createServer() {
 
   // Routes
   app.use('/api/rag', createLightRagRouter(lightRag));
+  app.use('/api/benchmark', createBenchmarkRouter(lightRag));
 
   // Error handling
   app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {

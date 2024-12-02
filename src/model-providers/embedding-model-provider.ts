@@ -6,7 +6,7 @@ export class EmbeddingModelProvider extends ModelProvider<IEmbeddingClient> {
     constructor(additionalModels?: IModelMapping) {
         super({
             ...additionalModels,
-            'openai': (config, env) => new OpenAIEmbeddingClient(config)
+            'openai-compatible': (config, env) => new OpenAIEmbeddingClient(config)
         });
     }
 }

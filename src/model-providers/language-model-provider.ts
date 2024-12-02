@@ -6,7 +6,7 @@ export class LanguageModelProvider extends ModelProvider<LLMClient> {
     constructor(additionalModels?: IModelMapping) {
         super({
             ...additionalModels,
-            'openai': (config, env) => new OpenAIClient(config, env.openAiConfig)
+            'openai-compatible': (config, env) => new OpenAIClient(config, env.openAiConfig)
         });
     }
 }
