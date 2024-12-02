@@ -15,7 +15,7 @@ ENV NODE_ENV=${NODE_ENV}
 ENV NPM_CONFIG_LOGLEVEL=warn
 
 # Copy package files
-COPY package.json package-lock.json ./
+COPY package.json ./
 RUN npm ci
 
 # Copy source and build
@@ -31,7 +31,7 @@ ENV PORT=3000
 
 WORKDIR /app
 COPY --from=builder /build/dist ./dist
-COPY package.json package-lock.json ./
+COPY package.json ./
 RUN npm ci --omit=dev
 
 EXPOSE ${PORT}
