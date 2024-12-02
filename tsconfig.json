@@ -13,6 +13,6 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "__tests__/light-rag.unit.test.ts"],
   "exclude": ["node_modules", "**/*.test.ts"]
 } 

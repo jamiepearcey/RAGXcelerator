@@ -1,5 +1,5 @@
-import { LightRAG } from '../light-rag';
-import { BaseGraphStorage, BaseKVStorage, BaseVectorStorage, LLMClient, TextChunkSchema } from '../interfaces';
+import { LightRAG } from '../src/light-rag';
+import { BaseGraphStorage, BaseKVStorage, BaseVectorStorage, LLMClient, TextChunkSchema } from '../src/interfaces';
 import { jest } from '@jest/globals';
 
 // Mock storages

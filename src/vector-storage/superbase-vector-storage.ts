@@ -69,7 +69,7 @@ export class SupabaseVectorStorage implements BaseVectorStorage {
     const queryEmbedding = await this.embeddingFunc(query);
 
     const { data, error } = await this.superbaseClient.rpc('match_documents', {
-      query_embedding: queryEmbedding,
+      query_embedding: JSON.stringify(queryEmbedding),
       match_count: topK,
       table_name: this.tableName,
       embedding_column: this.embeddingColumn
@@ -166,37 +166,3 @@ export class SupabaseVectorStorage implements BaseVectorStorage {
 export const getSuperbaseVectorStorageFactory = (client: SupabaseClient, embeddingFunc: EmbeddingFunction) => {
   return (namespace: string, metaData: string[]) => new SupabaseVectorStorage(client, embeddingFunc, namespace, 'embedding', 'content', metaData)
 }
-// SQL function to create in your Supabase database:
-/*
-create or replace function match_documents (
-  query_embedding vector(1536),
-  match_count int,
-  table_name text,
-  embedding_column text
-) returns table (
-  id text,
-  content text,
-  similarity float
-)
-language plpgsql
-as $$
-begin
-  return query execute
-    format('
-      select id, content, 1 - (%s <=> embedding) as similarity
-      from %I
-      order by %s <=> embedding
-      limit %L
-    ', query_embedding, table_name, query_embedding, match_count);
-end;
-$$;
-
--- Optional: Add a function to refresh search indices if needed
-create or replace function refresh_search_index(table_name text)
-returns void as $$
-begin
-  -- Add any index refresh logic here
-  -- For example: REFRESH MATERIALIZED VIEW if you're using one
-end;
-$$ language plpgsql;
-*/

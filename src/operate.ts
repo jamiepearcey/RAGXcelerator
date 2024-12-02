@@ -689,7 +689,7 @@ async function getNodeData(
 
   // Get entity information and degrees
   const nodeDatas = await Promise.all(
-    results.map(r => knowledgeGraphInst.getNode(r.entity_name))
+    results.map(r => knowledgeGraphInst.getNode(r.id))
   );
   const nodeDegrees = await Promise.all(
     results.map(r => knowledgeGraphInst.nodeDegree(r.entity_name))

@@ -130,38 +130,3 @@ export class SupabaseKVStorage<T> implements BaseKVStorage<T> {
 }
 
 
-/* SQL to create the table and index:
-
-CREATE TABLE kv_store (
-  id TEXT NOT NULL,
-  namespace TEXT NOT NULL,
-  data JSONB NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
-  PRIMARY KEY (id, namespace)
-);
-
-CREATE INDEX idx_kv_store_namespace ON kv_store(namespace);
-
--- Optional: Add a function to refresh indices if needed
-CREATE OR REPLACE FUNCTION refresh_kv_store_index(store_namespace TEXT)
-RETURNS void AS $$
-BEGIN
-  -- Add any index refresh logic here
-END;
-$$ LANGUAGE plpgsql;
-
--- Optional: Add trigger for updated_at
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = TIMEZONE('utc', NOW());
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
-CREATE TRIGGER update_kv_store_updated_at
-    BEFORE UPDATE ON kv_store
-    FOR EACH ROW
-    EXECUTE PROCEDURE update_updated_at_column();
-*/
