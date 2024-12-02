@@ -3,7 +3,6 @@ FROM node:16-alpine AS builder
 
 # Add build arguments
 ARG NODE_ENV=production
-ARG NPM_TOKEN
 
 # Add build-time dependencies
 RUN apk add --no-cache python3 make g++
@@ -16,7 +15,6 @@ ENV NPM_CONFIG_LOGLEVEL=warn
 
 # Copy package files
 COPY package.json ./
-RUN npm ci
 
 # Copy source and build
 COPY . .
@@ -32,7 +30,6 @@ ENV PORT=3000
 WORKDIR /app
 COPY --from=builder /build/dist ./dist
 COPY package.json ./
-RUN npm ci --omit=dev
 
 EXPOSE ${PORT}
 CMD ["npm", "start"] 
