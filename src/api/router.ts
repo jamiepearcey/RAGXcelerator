@@ -10,10 +10,10 @@ export function createLightRagRouter(lightRag: LightRAG) {
 
   /**
    * @openapi
-   * /api/rag/query:
+   * /api/rag/insert:
    *   post:
-   *     summary: Query the RAG system
-   *     description: Send a query to get information from the knowledge base
+   *     summary: Insert documents
+   *     description: Insert one or more documents into the knowledge base
    *     requestBody:
    *       required: true
    *       content:
@@ -21,23 +21,26 @@ export function createLightRagRouter(lightRag: LightRAG) {
    *           schema:
    *             type: object
    *             properties:
-   *               query:
-   *                 type: string
-   *               mode:
-   *                 type: string
-   *                 enum: [local, global, hybrid, naive]
+   *               documents:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                 description: Array of document texts to insert
    *     responses:
    *       200:
-   *         description: Query response
+   *         description: Documents inserted successfully
    *         content:
    *           application/json:
    *             schema:
    *               type: object
    *               properties:
-   *                 response:
-   *                   type: string
+   *                 success:
+   *                   type: boolean
+   *       400:
+   *         description: Invalid document format
+   *       500:
+   *         description: Server error
    */
-  // Insert documents
   router.post('/insert', async (req: Request, res: Response) => {
     try {
       const { documents } = req.body;
@@ -53,7 +56,60 @@ export function createLightRagRouter(lightRag: LightRAG) {
     }
   });
 
-  // Insert custom knowledge graph
+  /**
+   * @openapi
+   * /api/rag/insert-kg:
+   *   post:
+   *     summary: Insert custom knowledge graph
+   *     description: Insert custom entities and relationships into the knowledge graph
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               customKg:
+   *                 type: object
+   *                 properties:
+   *                   entities:
+   *                     type: array
+   *                     items:
+   *                       type: object
+   *                       properties:
+   *                         entityName:
+   *                           type: string
+   *                         entityType:
+   *                           type: string
+   *                         description:
+   *                           type: string
+   *                         sourceId:
+   *                           type: string
+   *                   relationships:
+   *                     type: array
+   *                     items:
+   *                       type: object
+   *                       properties:
+   *                         srcId:
+   *                           type: string
+   *                         tgtId:
+   *                           type: string
+   *                         description:
+   *                           type: string
+   *                         keywords:
+   *                           type: string
+   *                         weight:
+   *                           type: number
+   *                         sourceId:
+   *                           type: string
+   *     responses:
+   *       200:
+   *         description: Knowledge graph inserted successfully
+   *       400:
+   *         description: Invalid knowledge graph format
+   *       500:
+   *         description: Server error
+   */
   router.post('/insert-kg', async (req: Request, res: Response) => {
     try {
       const { customKg } = req.body;
@@ -69,7 +125,57 @@ export function createLightRagRouter(lightRag: LightRAG) {
     }
   });
 
-  // Query
+  /**
+   * @openapi
+   * /api/rag/query:
+   *   post:
+   *     summary: Query the knowledge base
+   *     description: Query the knowledge base using different modes
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - query
+   *             properties:
+   *               query:
+   *                 type: string
+   *               params:
+   *                 type: object
+   *                 properties:
+   *                   mode:
+   *                     type: string
+   *                     enum: [local, global, hybrid, naive]
+   *                     default: local
+   *                   topK:
+   *                     type: number
+   *                     default: 5
+   *                   maxTokenForTextUnit:
+   *                     type: number
+   *                     default: 1024
+   *                   maxTokenForLocalContext:
+   *                     type: number
+   *                     default: 512
+   *                   maxTokenForGlobalContext:
+   *                     type: number
+   *                     default: 512
+   *     responses:
+   *       200:
+   *         description: Query response
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 response:
+   *                   type: string
+   *       400:
+   *         description: Invalid query format
+   *       500:
+   *         description: Query processing failed
+   */
   router.post('/query', async (req: Request, res: Response) => {
     try {
       const { query, params } = req.body;
@@ -96,7 +202,34 @@ export function createLightRagRouter(lightRag: LightRAG) {
     }
   });
 
-  // Delete entity
+  /**
+   * @openapi
+   * /api/rag/entity/{name}:
+   *   delete:
+   *     summary: Delete entity
+   *     description: Delete an entity and its relationships from the knowledge graph
+   *     parameters:
+   *       - in: path
+   *         name: name
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Name of the entity to delete
+   *     responses:
+   *       200:
+   *         description: Entity deleted successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *       400:
+   *         description: Entity name is required
+   *       500:
+   *         description: Failed to delete entity
+   */
   router.delete('/entity/:name', async (req: Request, res: Response) => {
     try {
       const { name } = req.params;
@@ -112,7 +245,53 @@ export function createLightRagRouter(lightRag: LightRAG) {
     }
   });
 
-  // Add streaming upload endpoint
+  /**
+   * @openapi
+   * /api/rag/stream:
+   *   post:
+   *     summary: Stream document upload
+   *     description: Upload and process a document stream
+   *     parameters:
+   *       - in: query
+   *         name: chunkSize
+   *         schema:
+   *           type: integer
+   *         description: Size of chunks in bytes
+   *       - in: query
+   *         name: encoding
+   *         schema:
+   *           type: string
+   *         description: Text encoding
+   *       - in: query
+   *         name: maxConcurrency
+   *         schema:
+   *           type: integer
+   *         description: Maximum concurrent processing tasks
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         multipart/form-data:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               file:
+   *                 type: string
+   *                 format: binary
+   *     responses:
+   *       200:
+   *         description: Stream processed successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *       400:
+   *         description: No file provided
+   *       500:
+   *         description: Stream processing failed
+   */
   router.post('/stream', upload.single('file'), async (req: Request, res: Response) => {
     try {
       if (!req.file) {

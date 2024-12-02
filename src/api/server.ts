@@ -20,6 +20,8 @@ export async function createServer() {
     app.use(cors(corsOptions));
   }
 
+  // Configure JSON formatting
+  app.set('json spaces', 2);
   app.use(express.json());
 
   /**

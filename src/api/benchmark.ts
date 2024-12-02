@@ -5,6 +5,72 @@ import { QueryParam } from '../interfaces';
 export function createBenchmarkRouter(lightRAG: LightRAG) {
     const router = Router();
 
+    /**
+     * @openapi
+     * /api/benchmark/compare:
+     *   post:
+     *     summary: Compare different query modes
+     *     description: Run the same query across all modes and compare performance
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - query
+     *             properties:
+     *               query:
+     *                 type: string
+     *                 description: The query to test
+     *               text:
+     *                 type: string
+     *                 description: Optional custom text to use for testing
+     *     responses:
+     *       200:
+     *         description: Comparison results
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 query:
+     *                   type: string
+     *                 text:
+     *                   type: string
+     *                   enum: [sample, custom]
+     *                 results:
+     *                   type: object
+     *                   additionalProperties:
+     *                     type: object
+     *                     properties:
+     *                       sampleText:
+     *                         type: string
+     *                       response:
+     *                         type: string
+     *                       performance:
+     *                         type: object
+     *                         properties:
+     *                           durationMs:
+     *                             type: number
+     *                           memoryUsage:
+     *                             type: object
+     *                           mode:
+     *                             type: string
+     *                 summary:
+     *                   type: object
+     *                   properties:
+     *                     fastestMode:
+     *                       type: string
+     *                     timings:
+     *                       type: object
+     *                     memoryUsage:
+     *                       type: object
+     *       400:
+     *         description: Query is required
+     *       500:
+     *         description: Benchmark failed
+     */
     router.post('/compare', async (req: Request, res: Response) => {
         const { query, text } = req.body;
         if (!query) {
@@ -93,7 +159,86 @@ export function createBenchmarkRouter(lightRAG: LightRAG) {
         }
     });
 
-    // New query benchmark endpoint
+    /**
+     * @openapi
+     * /api/benchmark/query:
+     *   post:
+     *     summary: Benchmark single query mode
+     *     description: Run performance tests on a specific query mode with multiple iterations
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - query
+     *             properties:
+     *               query:
+     *                 type: string
+     *                 description: The query to test
+     *               mode:
+     *                 type: string
+     *                 enum: [local, global, hybrid, naive]
+     *                 default: local
+     *                 description: Query mode to test
+     *               iterations:
+     *                 type: integer
+     *                 minimum: 1
+     *                 default: 1
+     *                 description: Number of test iterations
+     *     responses:
+     *       200:
+     *         description: Benchmark results
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 query:
+     *                   type: string
+     *                 mode:
+     *                   type: string
+     *                 iterations:
+     *                   type: integer
+     *                 metrics:
+     *                   type: array
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       iteration:
+     *                         type: integer
+     *                       durationMs:
+     *                         type: number
+     *                       response:
+     *                         type: string
+     *                       memoryUsage:
+     *                         type: object
+     *                       timestamp:
+     *                         type: string
+     *                 summary:
+     *                   type: object
+     *                   properties:
+     *                     duration:
+     *                       type: object
+     *                       properties:
+     *                         average:
+     *                           type: number
+     *                         min:
+     *                           type: number
+     *                         max:
+     *                           type: number
+     *                         standardDeviation:
+     *                           type: number
+     *                     memory:
+     *                       type: object
+     *                     timestamp:
+     *                       type: string
+     *       400:
+     *         description: Query is required
+     *       500:
+     *         description: Benchmark failed
+     */
     router.post('/query', async (req: Request, res: Response) => {
         const { query, mode = 'local', iterations = 1 } = req.body;
 
