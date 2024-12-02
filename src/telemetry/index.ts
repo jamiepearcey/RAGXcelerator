@@ -32,7 +32,7 @@ export function setupTelemetry(config: {
     });
 
     loggerProvider.addLogRecordProcessor(new SimpleLogRecordProcessor(new OTLPLogExporter({
-        url: config.otlpEndpoint || 'http://localhost:4318',
+        url: config.otlpEndpoint,
         keepAlive: true,
     })));
 
@@ -40,7 +40,7 @@ export function setupTelemetry(config: {
     setLogger(otelLogger);
 
     const traceExporter = new OTLPTraceExporter({
-        url: config.otlpEndpoint || 'http://localhost:4318/v1/traces',
+        url: config.otlpEndpoint + '/v1/traces',
         headers: {},
     });
 
