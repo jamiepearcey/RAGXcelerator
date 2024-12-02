@@ -1,8 +1,11 @@
 import { createServer } from './api/server';
 import { env } from './env';
+import { setupTelemetry } from './telemetry';
 
 async function startServer() {
     try {
+        setupTelemetry(env.telemetry);
+
         const app = await createServer();
         const port = env.server.port;
 

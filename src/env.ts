@@ -30,5 +30,11 @@ export const env: IEnv = {
         port: parseInt(process.env.PORT || '3000'),
         corsEnabled: process.env.CORS_ENABLED?.toLowerCase() === 'true',
         corsOrigin: process.env.CORS_ORIGIN?.split(',')
+    },
+    telemetry: {
+        enabled: process.env.TELEMETRY_ENABLED?.toLowerCase() === 'true',
+        serviceName: process.env.TELEMETRY_SERVICE_NAME || 'light-rag',
+        environment: process.env.NODE_ENV || 'development',
+        otlpEndpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT
     }
 };

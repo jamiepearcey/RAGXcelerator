@@ -273,6 +273,12 @@ export interface StreamProcessor {
     ): Promise<void>;
 }
 
+export interface ITelemetryConfig {
+    enabled: boolean;
+    serviceName: string;
+    environment: string;
+    otlpEndpoint?: string;
+}
 
 export interface IEnv {
     neo4j: INeo4jStorageConfig;
@@ -285,6 +291,7 @@ export interface IEnv {
         corsEnabled: boolean;
         corsOrigin?: string | string[];
     };
+    telemetry: ITelemetryConfig;
 }
 
 export type IModelMapping = Record<string, (config: IModelApiConfig, env: IEnv) => any>;

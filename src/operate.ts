@@ -375,8 +375,9 @@ async function extractEntities(
 
   if (!allEntitiesData.length) {
     logger.warn("Didn't extract any entities, maybe your LLM is not working");
-    return null;
+    throw new Error("Didn't extract any entities, maybe your LLM is not working");
   }
+  
   if (!allRelationshipsData.length) {
     logger.warn("Didn't extract any relationships, maybe your LLM is not working");
     return null;

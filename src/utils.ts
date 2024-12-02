@@ -1,12 +1,45 @@
 import crypto from 'crypto';
 import { encodingForModel, TiktokenModel } from 'js-tiktoken';
 import { ChunkResult } from './interfaces';
+import { Logger, AnyValueMap, SeverityNumber } from '@opentelemetry/api-logs';
+
+let loggerImpl: Logger;
+
+export function setLogger(logger: Logger) {
+  loggerImpl = logger;
+}
+
+const emitConsole = (severityNumber: SeverityNumber, message: string, ...optionalParams: any[]) => {
+  const anyValues: AnyValueMap = {};
+
+  optionalParams.forEach((x, i) => {
+    anyValues[`param${i}`] = x;
+  });
+
+  loggerImpl?.emit({
+    severityNumber: severityNumber,
+    body: message,
+    attributes: anyValues
+  })
+}
 
 export const logger = {
-  info: console.info,
-  warn: console.warn,
-  error: console.error,
-  debug: console.debug,
+  info(message?: any, ...optionalParams: any[]) {
+    console.log(message, ...optionalParams)
+    emitConsole(SeverityNumber.INFO, message, ...optionalParams)
+  },
+  warn(message?: any, ...optionalParams: any[]) {
+    console.warn(message, ...optionalParams)
+    emitConsole(SeverityNumber.WARN, message, ...optionalParams)
+  },
+  error(message?: any, ...optionalParams: any[]) {
+    console.error(message, ...optionalParams)
+    emitConsole(SeverityNumber.ERROR, message, ...optionalParams)
+  },
+  debug(message?: any, ...optionalParams: any[]) {
+    console.debug(message, ...optionalParams)
+    emitConsole(SeverityNumber.DEBUG, message, ...optionalParams)
+  },
 };
 
 export function cleanStr(str: string): string {
