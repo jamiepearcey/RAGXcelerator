@@ -13,10 +13,14 @@ const options = {
       },
     },
     servers: [
-      {
-        url: 'http://localhost:3000',
-        description: 'Development server',
-      },
+        {
+          url: 'http://localhost:3000',
+          description: 'Development server',
+        },
+        {
+          url: 'https://ragxcelerator.deepintrospect.com',
+          description: 'prod server',
+        }
     ],
   },
   apis: ['./src/api/*.ts'], // Path to the API docs

@@ -56,7 +56,7 @@ describe('Integration test', () => {
         expect(result).toBeUndefined();
     });
 
-    it('should query local context about specific entities', async () => {
+    it('what is the latest news about AI technology development', async () => {
         const response = await lightRAG.query("How are different companies approaching AI technology development and what are their specific focus areas?", {
             ...DEFAULT_QUERY_PARAM,
             mode: 'naive'
@@ -65,7 +65,7 @@ describe('Integration test', () => {
         expect(response).toBeTruthy();
     });
 
-    it('should query global relationships between companies', async () => {
+    it('what is the latest news about AI technology development', async () => {
         const response = await lightRAG.query("How are different companies approaching AI technology development and what are their specific focus areas.", {
             ...DEFAULT_QUERY_PARAM,
             mode: 'local'
@@ -83,7 +83,7 @@ describe('Integration test', () => {
         expect(response).toBeTruthy();
     });
 
-    it('should query naive text search about locations and facilities', async () => {
+    it('what is the latest news about AI technology development', async () => {
         const response = await lightRAG.query("How are different companies approaching AI technology development and what are their specific focus areas?", {
             ...DEFAULT_QUERY_PARAM,
             mode: 'hybrid'
