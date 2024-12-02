@@ -1,12 +1,12 @@
 # Build stage
-FROM node:16-alpine AS builder
+FROM node:18-alpine AS builder
 WORKDIR /build
 COPY package*.json ./
 COPY . .
 RUN npm install && npm run build
 
 # Run stage
-FROM node:16-alpine
+FROM node:18-alpine
 WORKDIR /app
 COPY --from=builder /build/dist ./dist
 COPY package.json ./

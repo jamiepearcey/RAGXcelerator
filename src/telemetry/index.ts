@@ -31,13 +31,13 @@ export function setupTelemetry(config: {
         resource
     });
 
-    const otelLogger = loggerProvider.getLogger('default');
-    setLogger(otelLogger);
-
     loggerProvider.addLogRecordProcessor(new SimpleLogRecordProcessor(new OTLPLogExporter({
         url: config.otlpEndpoint || 'http://localhost:4318',
         keepAlive: true,
     })));
+
+    const otelLogger = loggerProvider.getLogger('default');
+    setLogger(otelLogger);
 
     const traceExporter = new OTLPTraceExporter({
         url: config.otlpEndpoint || 'http://localhost:4318/v1/traces',
