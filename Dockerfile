@@ -1,35 +1,40 @@
-FROM node:20-alpine
+# Build stage
+FROM node:20-slim as builder
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@8.15.4 --activate
 
 WORKDIR /app
 
-# Install dependencies first (better layer caching)
-COPY package*.json ./
-RUN npm install
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
-# Build TypeScript
-RUN npm run build
+# Build application
+RUN pnpm build
 
-# Set all required environment variables
-ENV NODE_ENV=production \
-    PORT=3000 \
-    # Neo4j Configuration
-    NEO4J_URI="" \
-    NEO4J_USERNAME="" \
-    NEO4J_PASSWORD="" \
-    # Supabase Configuration
-    SUPABASE_URL="" \
-    SUPABASE_ANON_KEY="" \
-    # OpenAI Configuration
-    OPENAI_API_KEY="" \
-    OPENAI_BASE_URL="https://api.openai.com/v1" \
-    # LightRAG Configuration
-    CHUNK_OVERLAP_TOKEN_SIZE=128 \
-    CHUNK_TOKEN_SIZE=1024 \
-    TIKTOKEN_MODEL="gpt-4"
+# Production stage
+FROM node:20-slim as production
 
-EXPOSE $PORT
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@8.15.4 --activate
 
-CMD ["npm", "start"] 
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install production dependencies only
+RUN pnpm install --prod --frozen-lockfile
+
+# Copy built application from builder
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 3000
+
+CMD ["pnpm", "start"] 

@@ -49,7 +49,7 @@ export function setupTelemetry(config: {
         traceExporter,
         instrumentations: [
             new HttpInstrumentation({
-                ignoreIncomingPaths: ['/health', '/api-docs'],
+                ignoreIncomingRequestHook: (request) => request.url ? ['/health', '/api-docs'].some(path => request?.url?.includes(path) ?? false) : false,
             }),
         ],
     });
