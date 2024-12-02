@@ -48,7 +48,7 @@ export class SupabaseKVStorage<T> implements BaseKVStorage<T> {
 
     if (error) throw error;
     if (!data?.data) throw new Error(`No data found for id: ${id}`);
-    return data.data;
+    return JSON.parse(data.data);
   }
 
   async getByIds(ids: string[]): Promise<T[]> {
@@ -60,7 +60,7 @@ export class SupabaseKVStorage<T> implements BaseKVStorage<T> {
 
     if (error) throw error;
 
-    const dataMap = new Map(data?.map(item => [item.id, item.data]) || []);
+    const dataMap = new Map(data?.map(item => [item.id, JSON.parse(item.data)]) || []);
     
     // Filter out null values to match the interface
     return ids.map(id => {

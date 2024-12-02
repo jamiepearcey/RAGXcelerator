@@ -77,9 +77,9 @@ export interface QueryParam {
     maxTokenForTextUnit: number;
     maxTokenForLocalContext: number;
     maxTokenForGlobalContext: number;
-    responseType?: string;
-    onlyNeedContext?: boolean;
-    onlyNeedPrompt?: boolean;
+    responseType: string;
+    onlyNeedContext: boolean;
+    onlyNeedPrompt: boolean;
 }
 
 export interface BaseStorage {

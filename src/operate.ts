@@ -683,22 +683,25 @@ async function getNodeData(
 ): Promise<[string, string, string]> {
   // Get similar entities
   const results = await entitiesVdb.query(query, queryParam.topK);
+
   if (!results.length) {
     return ['', '', ''];
   }
 
+  const documents = await entitiesVdb.getByIds(results.map(r => r.id));
+
   // Get entity information and degrees
   const nodeDatas = await Promise.all(
-    results.map(r => knowledgeGraphInst.getNode(r.id))
+    documents.map(r => knowledgeGraphInst.getNode(r.entityName))
   );
   const nodeDegrees = await Promise.all(
-    results.map(r => knowledgeGraphInst.nodeDegree(r.entity_name))
+    documents.map(r => knowledgeGraphInst.nodeDegree(r.entityName))
   );
 
-  const nodeDataWithRanks = results
+  const nodeDataWithRanks = documents
     .map((k, i) => ({
       ...nodeDatas[i],
-      entity_name: k.entity_name,
+      entityName: k.entityName,
       rank: nodeDegrees[i]
     }))
     .filter(n => n !== null);
@@ -726,8 +729,8 @@ async function getNodeData(
   nodeDataWithRanks.forEach((n, i) => {
     entitiesSectionList.push([
       i,
-      n.entity_name,
-      n.entity_type || "UNKNOWN",
+      n.entityName,
+      n.entityType || "UNKNOWN",
       n.description || "UNKNOWN",
       n.rank
     ]);
@@ -739,8 +742,8 @@ async function getNodeData(
   useRelations.forEach((e, i) => {
     relationsSectionList.push([
       i,
-      e.src_tgt[0],
-      e.src_tgt[1],
+      e.srcTgt[0],
+      e.srcTgt[1],
       e.description,
       e.keywords,
       e.weight,
@@ -773,17 +776,19 @@ async function getEdgeData(
     return ['', '', ''];
   }
 
+  const documents = await relationshipsVdb.getByIds(results.map(r => r.id));
+
   const edgeDatas = await Promise.all(
-    results.map(r => knowledgeGraphInst.getEdge(r.src_id, r.tgt_id))
+    documents.map(r => knowledgeGraphInst.getEdge(r.srcId, r.tgtId))
   );
+  
   const edgeDegrees = await Promise.all(
-    results.map(r => knowledgeGraphInst.edgeDegree(r.src_id, r.tgt_id))
+    documents.map(r => knowledgeGraphInst.edgeDegree(r.srcId, r.tgtId))
   );
 
-  const edgeDataWithRanks = results
+  const edgeDataWithRanks = documents
     .map((k, i) => ({
-      src_id: k.src_id,
-      tgt_id: k.tgt_id,
+      ...k,
       rank: edgeDegrees[i],
       ...edgeDatas[i]
     }))
@@ -813,8 +818,8 @@ async function getEdgeData(
   edgeDataWithRanks.forEach((e, i) => {
     relationsSectionList.push([
       i,
-      e.src_id,
-      e.tgt_id,
+      e.srcId,
+      e.tgtId,
       e.description,
       e.keywords,
       e.weight,
@@ -826,8 +831,8 @@ async function getEdgeData(
   useEntities.forEach((n, i) => {
     entitiesSectionList.push([
       i,
-      n.entity_name,
-      n.entity_type || "UNKNOWN",
+      n.entityName,
+      n.entityType || "UNKNOWN",
       n.description || "UNKNOWN",
       n.rank
     ]);
@@ -853,12 +858,12 @@ async function findMostRelatedTextUnitFromEntities(
 ): Promise<TextChunkSchema[]> {
   // Get text units from node source_ids
   const textUnits = nodeDatas.map(dp => 
-    splitStringByMultiMarkers(dp.source_id, [GRAPH_FIELD_SEP])
+    splitStringByMultiMarkers(dp.sourceId, [GRAPH_FIELD_SEP])
   );
 
   // Get edges for each node
   const edges = await Promise.all(
-    nodeDatas.map(dp => knowledgeGraphInst.getNodeEdges(dp.entity_name))
+    nodeDatas.map(dp => knowledgeGraphInst.getNodeEdges(dp.entityName))
   );
 
   // Collect all one-hop nodes
@@ -945,8 +950,8 @@ async function findMostRelatedEntitiesFromRelationships(
   // Collect unique entity names from edges
   const entityNames = new Set<string>();
   edgeDatas.forEach(e => {
-    entityNames.add(e.src_id);
-    entityNames.add(e.tgt_id);
+    entityNames.add(e.srcId);
+    entityNames.add(e.tgtId);
   });
 
   const entityNamesArray = Array.from(entityNames);
@@ -961,7 +966,7 @@ async function findMostRelatedEntitiesFromRelationships(
   const nodeDataWithRanks = entityNamesArray
     .map((entityName, i) => ({
       ...nodeDatas[i],
-      entity_name: entityName,
+      entityName: entityName,
       rank: nodeDegrees[i]
     }))
     .filter(n => n !== null);
@@ -981,7 +986,7 @@ async function findMostRelatedEdgesFromEntities(
 ): Promise<any[]> {
   // Get all related edges for each node
   const allRelatedEdges = await Promise.all(
-    nodeDatas.map(dp => knowledgeGraphInst.getNodeEdges(dp.entity_name))
+    nodeDatas.map(dp => knowledgeGraphInst.getNodeEdges(dp.entityName))
   );
 
   // Collect unique edges using a Set to avoid duplicates
@@ -1009,11 +1014,12 @@ async function findMostRelatedEdgesFromEntities(
   // Combine edge data with ranks
   const allEdgesData = allEdges
     .map((k, i) => ({
-      src_tgt: k,
+      srcTgt: k,
       rank: allEdgesDegree[i],
       ...allEdgesPack[i]
     }))
-    .filter(v => v !== null);
+    .filter(v => v !== null)
+    .filter(v => v.description != null); // TODO: check WHY this is necessary
 
   // Sort by rank first, then by weight
   allEdgesData.sort((a, b) => 
@@ -1038,7 +1044,7 @@ async function findRelatedTextUnitFromRelationships(
 ): Promise<TextChunkSchema[]> {
   // Get text units from edge source_ids
   const textUnits = edgeDatas.map(dp => 
-    splitStringByMultiMarkers(dp.source_id, [GRAPH_FIELD_SEP])
+    splitStringByMultiMarkers(dp.sourceId, [GRAPH_FIELD_SEP])
   );
 
   // Process all text units

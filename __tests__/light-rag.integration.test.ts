@@ -4,7 +4,7 @@ import { SupabaseVectorStorage } from '../src/vector-storage/superbase-vector-st
 import { SupabaseClient } from '@supabase/supabase-js';
 import { OpenAIClient } from '../src/llm-clients/openai-client';
 import { Neo4jStorage } from '../src/storage/neo4j-storage';
-import { LightRAG } from '../src/light-rag';
+import { DEFAULT_QUERY_PARAM, LightRAG } from '../src/light-rag';
 
 describe('Integration test', () => {
     jest.setTimeout(300000);
@@ -95,8 +95,12 @@ describe('Integration test', () => {
         expect(response).toBeTruthy();
     });
 
-    it('should query hybrid context about AI technology development', async () => {
-        const response = await lightRAG.query("How are different companies approaching AI technology development and what are their specific focus areas?");
+    it('what is the latest news about AI technology development', async () => {
+        const response = await lightRAG.query("How are different companies approaching AI technology development and what are their specific focus areas?", {
+            ...DEFAULT_QUERY_PARAM,
+            mode: 'hybrid'
+        });
+        console.log('news response:', response);
         expect(response).toBeTruthy();
     });
 

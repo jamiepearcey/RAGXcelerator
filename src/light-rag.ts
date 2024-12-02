@@ -16,7 +16,10 @@ export const DEFAULT_QUERY_PARAM: QueryParam = {
     topK: 5,
     maxTokenForTextUnit: 1024,
     maxTokenForLocalContext: 512,
-    maxTokenForGlobalContext: 512
+    maxTokenForGlobalContext: 512,
+    responseType: 'text',
+    onlyNeedContext: false,
+    onlyNeedPrompt: false,
 }
 
 export class LightRAG implements StreamProcessor {
@@ -37,8 +40,8 @@ export class LightRAG implements StreamProcessor {
         this.llmResponseCache = config.kvStorageFactory('llm_response_cache');
         this.fullDocumentCache = config.kvStorageFactory('full_document_cache');
         this.textChunkCache = config.kvStorageFactory('text_chunk_cache');
-        this.entityCache = config.vectorStorageFactory('entity_cache', []);
-        this.relationCache = config.vectorStorageFactory('relation_cache', []);
+        this.entityCache = config.vectorStorageFactory('entity_cache', ['entityName']);
+        this.relationCache = config.vectorStorageFactory('relation_cache', ['srcId', 'tgtId']);
         this.chunkCache = config.vectorStorageFactory('chunk_cache', ['fullDocId']);
         this.graphStorage = config.graphStorage;
         this.llmConfig = {...DEFAULT_LLM_CONFIG, ...config.llmConfig};
@@ -268,7 +271,7 @@ export class LightRAG implements StreamProcessor {
 
     async query(query: string, param: QueryParam = DEFAULT_QUERY_PARAM): Promise<string> {
         param = {...DEFAULT_QUERY_PARAM, ...param};
-        
+
         if (["local", "global", "hybrid"].includes(param.mode)) {
             
             const response = await kgQuery(
