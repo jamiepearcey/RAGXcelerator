@@ -35,6 +35,6 @@ export const env: IEnv = {
         enabled: process.env.TELEMETRY_ENABLED?.toLowerCase() === 'true',
         serviceName: process.env.TELEMETRY_SERVICE_NAME || 'light-rag',
         environment: process.env.NODE_ENV || 'development',
-        otlpEndpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://otel-collector:4318'
+        otlpEndpoint: process.env.OTEL_EXPORTER_ENDPOINT || 'http://otel-collector:4318'
     }
 };
