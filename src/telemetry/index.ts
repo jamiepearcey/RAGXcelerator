@@ -32,7 +32,7 @@ export function setupTelemetry(config: {
     });
 
     loggerProvider.addLogRecordProcessor(new SimpleLogRecordProcessor(new OTLPLogExporter({
-        url: config.otlpEndpoint,
+        url: config.otlpEndpoint + '/v1/logs',
         keepAlive: true,
     })));
 
