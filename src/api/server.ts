@@ -7,7 +7,7 @@ import { OpenAIClient } from '../llm-clients/openai-client';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { SupabaseKVStorage } from '../kv-storage/superbase-kv-storage';
 import { SupabaseVectorStorage } from '../vector-storage/superbase-vector-storage';
-import { Neo4jStorage } from '../storage/neo4j-storage';
+import { Neo4jStorage } from '../graph-storage/neo4j-storage';
 
 export async function createServer() {
   const app = express();

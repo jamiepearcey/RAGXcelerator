@@ -3,7 +3,7 @@ import { SupabaseKVStorage } from './kv-storage/superbase-kv-storage';
 import { getSuperbaseVectorStorageFactory, SupabaseVectorStorage } from './vector-storage/superbase-vector-storage';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { OpenAIClient } from './llm-clients/openai-client';
-import { Neo4jStorage } from './storage/neo4j-storage';
+import { Neo4jStorage } from './graph-storage/neo4j-storage';
 import { LightRAG } from './light-rag';
 import { EmbeddingFunction } from './interfaces';
 
