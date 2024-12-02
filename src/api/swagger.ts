@@ -19,7 +19,7 @@ const options = {
         },
         {
           url: 'https://ragxcelerator.deepintrospect.com',
-          description: 'prod server',
+          description: 'Production server',
         }
     ],
   },
