@@ -86,26 +86,38 @@ describe('Integration test', () => {
     });
 
     it('should query local context about specific entities', async () => {
-        const response = await lightRAG.query("What is Tim Cook's role at Apple and what AI partnership did he establish?");
+        const response = await lightRAG.query("How are different companies approaching AI technology development and what are their specific focus areas?", {
+            ...DEFAULT_QUERY_PARAM,
+            mode: 'naive'
+        });
+        console.log('naive output:', response);
         expect(response).toBeTruthy();
     });
 
     it('should query global relationships between companies', async () => {
-        const response = await lightRAG.query("Compare and contrast the AI partnerships between major tech companies mentioned in the documents.");
+        const response = await lightRAG.query("How are different companies approaching AI technology development and what are their specific focus areas.", {
+            ...DEFAULT_QUERY_PARAM,
+            mode: 'local'
+        });
+        console.log('local output:', response);
         expect(response).toBeTruthy();
     });
 
     it('what is the latest news about AI technology development', async () => {
         const response = await lightRAG.query("How are different companies approaching AI technology development and what are their specific focus areas?", {
             ...DEFAULT_QUERY_PARAM,
-            mode: 'hybrid'
+            mode: 'global'
         });
-        console.log('news response:', response);
+        console.log('global output:', response);
         expect(response).toBeTruthy();
     });
 
     it('should query naive text search about locations and facilities', async () => {
-        const response = await lightRAG.query("What research facilities and locations are mentioned in relation to AI development?");
+        const response = await lightRAG.query("How are different companies approaching AI technology development and what are their specific focus areas?", {
+            ...DEFAULT_QUERY_PARAM,
+            mode: 'hybrid'
+        });
+        console.log('hybrid output:', response);
         expect(response).toBeTruthy();
     });
 });

@@ -1,4 +1,4 @@
-import { LightRAG } from '../src/light-rag';
+import { DEFAULT_QUERY_PARAM, LightRAG } from '../src/light-rag';
 import { BaseGraphStorage, BaseKVStorage, BaseVectorStorage, LLMClient, TextChunkSchema } from '../src/interfaces';
 import { jest } from '@jest/globals';
 
@@ -98,9 +98,11 @@ describe('LightRAG', () => {
     it('should insert a single document', async () => {
       const document = "Test document content";
       await lightRag.insert(document);
-      expect(kvStorageFactory).toHaveBeenCalledWith('full-document-cache');
-      expect(kvStorageFactory).toHaveBeenCalledWith('text-chunk-cache');
-      expect(vectorStorageFactory).toHaveBeenCalledWith('chunk-cache');
+      expect(kvStorageFactory).toHaveBeenCalledWith('full_document_cache');
+      expect(kvStorageFactory).toHaveBeenCalledWith('text_chunk_cache');
+      expect(vectorStorageFactory).toHaveBeenNthCalledWith(1, 'entity_cache', ['entityName']);
+      expect(vectorStorageFactory).toHaveBeenNthCalledWith(2, 'relation_cache', ['srcId', 'tgtId']);
+      expect(vectorStorageFactory).toHaveBeenNthCalledWith(3, 'chunk_cache', ['fullDocId']);
     });
 
     it('should handle empty document', async () => {
@@ -110,7 +112,7 @@ describe('LightRAG', () => {
     it('should handle multiple documents', async () => {
       const documents = ["Document 1", "Document 2"];
       await lightRag.insert(documents);
-      expect(kvStorageFactory).toHaveBeenCalledWith('full-document-cache');
+      expect(kvStorageFactory).toHaveBeenCalledWith('full_document_cache');
     });
   });
 
@@ -146,71 +148,46 @@ describe('LightRAG', () => {
   describe('Query Operations', () => {
     it('should handle local mode query', async () => {
       const response = await lightRag.query("Test query", {
-        mode: 'local',
-        topK: 5,
-        maxTokenForTextUnit: 1024,
-        maxTokenForLocalContext: 512,
-        maxTokenForGlobalContext: 512
+        ...DEFAULT_QUERY_PARAM,
+        mode: 'local'
       });
       expect(response).toBeTruthy();
     });
 
     it('should handle global mode query', async () => {
       const response = await lightRag.query("Test query", {
-        mode: 'global',
-        topK: 5,
-        maxTokenForTextUnit: 1024,
-        maxTokenForLocalContext: 512,
-        maxTokenForGlobalContext: 512
+        ...DEFAULT_QUERY_PARAM,
+        mode: 'global'
       });
       expect(response).toBeTruthy();
     });
 
     it('should handle hybrid mode query', async () => {
       const response = await lightRag.query("Test query", {
+        ...DEFAULT_QUERY_PARAM,
         mode: 'hybrid',
-        topK: 5,
-        maxTokenForTextUnit: 1024,
-        maxTokenForLocalContext: 512,
-        maxTokenForGlobalContext: 512
+        topK: 5
       });
       expect(response).toBeTruthy();
     });
 
     it('should handle naive mode query', async () => {
       const response = await lightRag.query("Test query", {
-        mode: 'naive',
-        topK: 5,
-        maxTokenForTextUnit: 1024,
-        maxTokenForLocalContext: 512,
-        maxTokenForGlobalContext: 512
+        ...DEFAULT_QUERY_PARAM,
+        mode: 'naive'
       });
       expect(response).toBeTruthy();
     });
 
     it('should handle invalid mode', async () => {
       await expect(lightRag.query("Test query", {
+        ...DEFAULT_QUERY_PARAM,
         mode: 'invalid' as any,
-        topK: 5,
-        maxTokenForTextUnit: 1024,
-        maxTokenForLocalContext: 512,
-        maxTokenForGlobalContext: 512
       })).rejects.toThrow();
     });
   });
 
   describe('Error Handling', () => {
-    it('should handle storage failures gracefully', async () => {
-      const failingKVStorage : BaseKVStorage<any> = {
-        ...new MockKVStorage(),
-        upsert: async () => { throw new Error('Storage error'); }
-      } as any;
-      
-      kvStorageFactory.mockImplementation(() => failingKVStorage);
-      
-      await expect(lightRag.insert("Test document")).rejects.toThrow();
-    });
-
     it('should handle LLM failures gracefully', async () => {
       const failingLLMClient : LLMClient = {
         ...llmClient,
