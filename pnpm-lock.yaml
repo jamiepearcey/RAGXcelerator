@@ -11,6 +11,12 @@ importers:
       '@dqbd/tiktoken':
         specifier: ^1.0.17
         version: 1.0.17
+      '@opentelemetry/api-logs':
+        specifier: ^0.55.0
+        version: 0.55.0
+      '@opentelemetry/exporter-logs-otlp-http':
+        specifier: ^0.55.0
+        version: 0.55.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/exporter-trace-otlp-http':
         specifier: 0.55.0
         version: 0.55.0(@opentelemetry/api@1.9.0)
@@ -20,12 +26,18 @@ importers:
       '@opentelemetry/instrumentation-http':
         specifier: 0.55.0
         version: 0.55.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/resources':
+        specifier: ^1.28.0
+        version: 1.28.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-logs':
         specifier: ^0.55.0
         version: 0.55.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-node':
         specifier: ^0.55.0
         version: 0.55.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/semantic-conventions':
+        specifier: ^1.28.0
+        version: 1.28.0
       '@supabase/supabase-js':
         specifier: ^2.46.2
         version: 2.46.2
@@ -549,6 +561,10 @@ packages:
 
   '@opentelemetry/semantic-conventions@1.27.0':
     resolution: {integrity: sha512-sAay1RrB+ONOem0OZanAR1ZI/k7yDpnOQSQmTMuGImUQb2y8EbSaCJ94FQluM74xoU03vlb2d2U90hZluL6nQg==}
+    engines: {node: '>=14'}
+
+  '@opentelemetry/semantic-conventions@1.28.0':
+    resolution: {integrity: sha512-lp4qAiMTD4sNWW4DbKLBkfiMZ4jbAboJIGOQr5DvciMRI494OapieI9qiODpOt0XBr1LjIDy1xAGAnVs5supTA==}
     engines: {node: '>=14'}
 
   '@protobufjs/aspromise@1.1.2':
@@ -2949,6 +2965,8 @@ snapshots:
       semver: 7.6.3
 
   '@opentelemetry/semantic-conventions@1.27.0': {}
+
+  '@opentelemetry/semantic-conventions@1.28.0': {}
 
   '@protobufjs/aspromise@1.1.2': {}
 
