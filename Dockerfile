@@ -1,40 +1,17 @@
 # Build stage
-FROM node:20-slim as builder
-
-# Install pnpm
+FROM node:16-alpine AS builder
 RUN corepack enable && corepack prepare pnpm@8.15.4 --activate
-
-WORKDIR /app
-
-# Copy package files and npmrc
-COPY package.json pnpm-lock.yaml .npmrc ./
-
-# Install dependencies with network timeout and retry settings
-RUN pnpm install --frozen-lockfile --network-timeout 100000 --retry 3
-
-# Copy source code
+WORKDIR /build
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install
 COPY . .
-
-# Build application
-RUN pnpm build
+RUN pnpm run build
 
 # Production stage
-FROM node:20-slim as production
-
-# Install pnpm
+FROM node:16-alpine
 RUN corepack enable && corepack prepare pnpm@8.15.4 --activate
-
 WORKDIR /app
-
-# Copy package files and npmrc
-COPY package.json pnpm-lock.yaml .npmrc ./
-
-# Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile --network-timeout 100000 --retry 3
-
-# Copy built application from builder
-COPY --from=builder /app/dist ./dist
-
-EXPOSE 3000
-
+COPY --from=builder /build/dist ./dist
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install
 CMD ["pnpm", "start"] 
